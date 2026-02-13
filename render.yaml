@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: hr-offer-bot
+    runtime: docker
+    repo: https://github.com/NewKemmi/hr-offer-bot
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: TELEGRAM_TOKEN
+        value: 8560652884:AAEejledGy-oOEL6EQuVr-cX2QkgB-AbD0U
