@@ -213,24 +213,26 @@ def start_bot():
 
 # --- Запуск ---
 async def run_bot():
-    """Запускает бота в асинхронном режиме."""
+    """Запускает бота в асинхронном режиме в ГЛАВНОМ потоке."""
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
-def start_bot():
-    """Запускает бота в отдельном потоке."""
-    asyncio.run(run_bot())
+def run_flask():
+    """Запускает Flask-сервер в фоновом потоке."""
+    port = int(os.environ.get("PORT", 10000))
+    print(f"🚀 Запускаем Flask на порту {port} в фоновом потоке")
+    # Отключаем debug и reloader, чтобы не мешали
+    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
 
 if __name__ == "__main__":
-    # Запускаем бота в фоновом потоке
+    import threading
     from threading import Thread
-    bot_thread = Thread(target=start_bot, daemon=True)
-    bot_thread.start()
-    print("✅ Бот запущен в фоновом потоке")
 
-    # Запускаем Flask-сервер (он будет слушать порт и держать процесс активным)
-    port = int(os.environ.get("PORT", 10000))
-    print(f"🚀 Запускаем Flask на порту {port}")
-    
-    # Важно: отключаем debug и reload, чтобы не мешали
-    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
+    # Запускаем Flask в фоновом потоке (daemon=True, чтобы завершался с главным)
+    flask_thread = Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+    print("✅ Flask запущен в фоновом потоке")
+
+    # Запускаем бота в ГЛАВНОМ потоке
+    print("🤖 Запускаем бота в главном потоке...")
+    asyncio.run(run_bot())
